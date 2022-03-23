@@ -3,11 +3,21 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import csv
 import time
+
+'''
+You don't need to put global on the base indentation level, just initialize the variables here and use global VAR_NAME within the classes/function you need to call them in
+'''
 global window
 global Drinks
 global delete
+
+
 window = Tk()
 
+
+###############################################
+#LIST OF ALL OBJECTS MADE FROM THE DRINK CLASS#
+###############################################
 drinkObjList = []
 
 class newDrink:
@@ -20,7 +30,10 @@ class newDrink:
         
         return("Drink: "+self.name+" Ingredients: "+self.ingredients)
 
-
+###################################################################################################################
+#READING THE drink.csv FILE FROM WITHIN THE DATA DIRECTORY. ADD ANY PRE INCLUDED DRINKS DIRECTLY INTO THE CSV FILE#
+###################################################################################################################
+    
 def readCSV():
     global drinkObjList
     with open('data/drink.csv','r') as f:
@@ -38,7 +51,11 @@ def readCSV():
 
             drinkObjList.append(drinkObj)
             print(drinkObjList)
-            
+
+
+##############################
+#METHOD FOR USER ADDED DRINKS#
+##############################
 def createDrink():
     check = True
     j = 1
@@ -69,7 +86,9 @@ def createDrink():
     
     
     
-
+'''
+Need to rewrite for csv implementation method
+'''
 class Ing():
     def __init__(self, name, amount):
         self.nam = name
