@@ -3,6 +3,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import csv
 import time
+from waiting import wait
 
 '''
 You don't need to put global on the base indentation level, just initialize the variables here and use global VAR_NAME within the classes/function you need to call them in
@@ -25,7 +26,13 @@ class newDrink:
     def __init__(self,name,ingredients):
         self.name = name
         self.ingredients = ingredients
-
+    
+    def name(self):
+        return self.name
+    
+    def ingredients(self):
+        return self.ingredients
+    
     def __str__(self):
         
         return("Drink: "+self.name+" Ingredients: "+self.ingredients)
@@ -43,14 +50,14 @@ def readCSV():
             drinkList = []
 
             drinkList.extend(currentLine.split(","))
-            print(drinkList)
+     #       #print(drinkList)
             name = drinkList[0]
             ingredients = drinkList[1]
 
             drinkObj = newDrink(name,ingredients)
 
             drinkObjList.append(drinkObj)
-            print(drinkObjList)
+     #       #print(drinkObjList)
 
 
 ##############################
@@ -89,64 +96,70 @@ def createDrink():
 '''
 Need to rewrite for csv implementation method
 '''
-class Ing():
-    def __init__(self, name, amount):
-        self.nam = name
-        self.amountOz = amount
-    def __str__(self):
-        return "Pour " + str(self.amountOz) + " ounce(s) of " + self.nam 
 
+
+####################################################
+# DISPLAYS EACH INGREDIENT FOR SAID DRINK ONE BY ONE
+####################################################
 class Drink(Frame):
     def __init__(self, drink):
-        
         self._drink = drink
         Frame.__init__(self)
-        col = 1
-
-        for inge in drink:
-            print(inge)
-            button = Label(window, text=inge)
-            button.grid(row=0, columnspan=1, column=1, pady=10, padx=130, ipadx=0, ipady=40)
-            
-            if (col == 1):
-                loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy()])
-                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=10, ipadx=50, ipady=40)
-            col += 1
-            #time.sleep(60)
-            
-            
         
-        #loginBtn1 = Button(window, text='hi', command=None)
-        #loginBtn1.grid(row=3, columnspan=3, column=2, pady=10, padx=10, ipadx=50, ipady=40)
+        ingredientList = []
+        ingredientList.extend(drink.split(";"))
+        
+        Drink.readthis(ingredientList)
+        
+    def readthis(ingredientList):
+        col = 1
+        for ingredient in ingredientList:
+            x = ingredient.replace("\n", "")
+            formatted = x.split("/")
+            
+            button = Label(window, text="Pour " + formatted[1] + " ounces of " + formatted[0])
+            button.grid(row=0, columnspan=1, column=1, pady=10, padx=130, ipadx=0, ipady=40)
+            ingredientList.pop(0)
+            
+            if (ingredientList == []):
+                loginBtn1 = Button(window, text="Finish", command=lambda: [button.destroy(), Label(window, text="Drink Finished").grid(row=0, columnspan=1, column=1, pady=10, padx=130, ipadx=0, ipady=40)])
+                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=70, ipadx=50, ipady=40)
+            else:
+                loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy(), Drink.readthis(ingredientList)])
+                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=10, ipadx=50, ipady=40)  
+            break
+    
 
-
-
-
+##########################################################
+# READS DRINK LIST AND DISPLAYS EACH ON A SELECTION SCREEN
+##########################################################
 class selectDrinks(Frame):
     def __init__(self):
         global delete
         Frame.__init__(self)
         col = 1
-        test = 0
+        row = 2
         delete = []
-        for drink in Drinks:
-            print(drink)
-            print(test)
-            loginBtn1 = Button(window, text=drink[1], command=lambda: [selectDrinks.deleteOptions(), Drink(drink[0])])
-            loginBtn1.grid(row=2, columnspan=1, column=col, pady=10, padx=10, ipadx=50, ipady=40)
+        for drink in drinkObjList:
+            loginBtn1 = Button(window, text=drink.name, command=lambda drink=drink: [selectDrinks.deleteOptions(), Drink(drink.ingredients)])
+            loginBtn1.grid(row=row, columnspan=1, column=col, pady=10, padx=10, ipadx=50, ipady=40)
             delete.append(loginBtn1)
-            col += 1
-            test += 1
+            
+            if (col % 2 == 0):
+                print(col)
+                row += 1
+                col = 1
+            else:
+                col +=1
             
     def deleteOptions():
         global delete
         for item in delete:
             item.destroy()
-            
-        #loginBtn2 = Button(window, text='Rum & Coke', command=lambda: [loginBtn2.destroy(), Drink( "####", "Rum & Coke")])
-        #loginBtn2.grid(row=3, columnspan=3, column=2, pady=10, padx=10, ipadx=50, ipady=40)
-        
-        
+
+############################################################
+# MAIN APP - SELECTION SCREEN FOR CREATING OR MAKING A DRINK
+############################################################
 class App(Frame):
     def __init__(self):
         Frame.__init__(self)
@@ -160,26 +173,6 @@ class App(Frame):
 
 readCSV()
 
-
-
-'''
-ing = []
-
-#hi = Ing("Rum", 1)
-RC_ing = [Ing("Rum", 1), Ing("Coke", 5)]
-VS_ing = [Ing("Vodka", 1), Ing("Sprite", 5)]
-
-ing.append(RC_ing)
-ing.append(VS_ing)
-
-Drinks = []
-Drinks.append([RC_ing, ["Rum & Coke"]])
-Drinks.append([VS_ing, ["Vodka & Sprite"]])
-print(ing[1][0])
-print(Drinks[0][1])
-print(RC_ing[1])
-    
-'''
 window.geometry("400x300")
 app = App()
 window.mainloop()
