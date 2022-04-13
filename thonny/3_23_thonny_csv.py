@@ -2,7 +2,9 @@ from tkinter import *
 import tkinter as tk
 from PIL import Image, ImageTk
 import csv
+from csv import writer
 import time
+from waiting import wait
 
 '''
 You don't need to put global on the base indentation level, just initialize the variables here and use global VAR_NAME within the classes/function you need to call them in
@@ -10,7 +12,7 @@ You don't need to put global on the base indentation level, just initialize the 
 global window
 global Drinks
 global delete
-
+global app
 
 window = Tk()
 
@@ -25,7 +27,13 @@ class newDrink:
     def __init__(self,name,ingredients):
         self.name = name
         self.ingredients = ingredients
-
+    
+    def name(self):
+        return self.name
+    
+    def ingredients(self):
+        return self.ingredients
+    
     def __str__(self):
         
         return("Drink: "+self.name+" Ingredients: "+self.ingredients)
@@ -43,143 +51,194 @@ def readCSV():
             drinkList = []
 
             drinkList.extend(currentLine.split(","))
-            print(drinkList)
+     #       #print(drinkList)
             name = drinkList[0]
             ingredients = drinkList[1]
 
             drinkObj = newDrink(name,ingredients)
 
             drinkObjList.append(drinkObj)
-            print(drinkObjList)
+     #       #print(drinkObjList)
 
 
 ##############################
 #METHOD FOR USER ADDED DRINKS#
 ##############################
-def createDrink():
-    check = True
-    j = 1
-    s = ""
-    usrName = str(input("What is the name of the drink? "))
-    
-    while check == True:
-        usrIng = input("Enter ingredient {} ").format(j)
-        usrAmt = input("Enter the amount in ounces for ingredient {} ").format(j)
-        
-        newIng = "{}/{};".format(usrIng,usrAmt)
-        
-        s += newIng
-        
-        usrCheck = input("Add more ingredients? [Y/N]")
-        
-        usrCheck = usrCheck.upper()
-        
-        if usrCheck == "Y":
-            j += 1
-            check = True
-            
-        else:
-            check = False
-            
-    outfile = open('data/drink.csv','a',newline="")
-    info = "{},{}".format(usrName,s)
+def createDrink(info):
+    with open('data/drink.csv','a',newline="") as f_object:
+        writer_object = writer(f_object)
+        writer_object.writerow(info)
+        f_object.close()
     
     
     
 '''
 Need to rewrite for csv implementation method
 '''
-class Ing():
-    def __init__(self, name, amount):
-        self.nam = name
-        self.amountOz = amount
-    def __str__(self):
-        return "Pour " + str(self.amountOz) + " ounce(s) of " + self.nam 
 
+
+####################################################
+# DISPLAYS EACH INGREDIENT FOR SAID DRINK ONE BY ONE
+####################################################
 class Drink(Frame):
     def __init__(self, drink):
-        
         self._drink = drink
         Frame.__init__(self)
-        col = 1
-
-        for inge in drink:
-            print(inge)
-            button = Label(window, text=inge)
-            button.grid(row=0, columnspan=1, column=1, pady=10, padx=130, ipadx=0, ipady=40)
-            
-            if (col == 1):
-                loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy()])
-                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=10, ipadx=50, ipady=40)
-            col += 1
-            #time.sleep(60)
-            
-            
         
-        #loginBtn1 = Button(window, text='hi', command=None)
-        #loginBtn1.grid(row=3, columnspan=3, column=2, pady=10, padx=10, ipadx=50, ipady=40)
+        ingredientList = []
+        ingredientList.extend(drink.split(";"))
+        
+        Drink.readthis(ingredientList)
+        
+    def readthis(ingredientList):
+        col = 1
+        for ingredient in ingredientList:
+            x = ingredient.replace("\n", "")
+            formatted = x.split("/")
+            
+            button = Label(window, text="Pour " + formatted[1] + " ounces of " + formatted[0])
+            button.grid(row=0, columnspan=1, column=1, pady=10, padx=130, ipadx=0, ipady=40)
+            ingredientList.pop(0)
+            
+            if (ingredientList == []):
+                
+                loginBtn1 = Button(window, text="Finish", command=lambda: [button.destroy(), App(), loginBtn1.destroy()])
+                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=70, ipadx=50, ipady=40)
+            else:
+                loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy(), Drink.readthis(ingredientList), loginBtn1.destroy()])
+                loginBtn1.grid(row=1, columnspan=2, column=col, pady=10, padx=10, ipadx=50, ipady=40)  
+            break
+    
 
-
-
-
+##########################################################
+# READS DRINK LIST AND DISPLAYS EACH ON A SELECTION SCREEN
+##########################################################
 class selectDrinks(Frame):
     def __init__(self):
         global delete
         Frame.__init__(self)
         col = 1
-        test = 0
+        row = 2
         delete = []
-        for drink in Drinks:
-            print(drink)
-            print(test)
-            loginBtn1 = Button(window, text=drink[1], command=lambda: [selectDrinks.deleteOptions(), Drink(drink[0])])
-            loginBtn1.grid(row=2, columnspan=1, column=col, pady=10, padx=10, ipadx=50, ipady=40)
+        for drink in drinkObjList:
+            loginBtn1 = Button(window, text=drink.name, command=lambda drink=drink: [selectDrinks.deleteOptions(), Drink(drink.ingredients)])
+            loginBtn1.grid(row=row, columnspan=1, column=col, pady=10, padx=10, ipadx=50, ipady=40)
             delete.append(loginBtn1)
-            col += 1
-            test += 1
+            
+            if (col % 2 == 0):
+                print(col)
+                row += 1
+                col = 1
+            else:
+                col +=1
             
     def deleteOptions():
         global delete
         for item in delete:
             item.destroy()
             
-        #loginBtn2 = Button(window, text='Rum & Coke', command=lambda: [loginBtn2.destroy(), Drink( "####", "Rum & Coke")])
-        #loginBtn2.grid(row=3, columnspan=3, column=2, pady=10, padx=10, ipadx=50, ipady=40)
+        
+############################################################
+# CREATE DRINK 
+############################################################
+class createDrinks(Frame):
+    def __init__(self):
+        Frame.__init__(self)
+        usrIng = ""
+        usrAmt = 0
+        
+        self.s = ""
+        self.inges = []
+        self.info = []
+        def main():
+            button = Label(window, text="What is the name of your drink?")
+            button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
+            loginBtn1 = Button(window, text="", command=lambda: [button.destroy(), self.info.append(returnDrink(entry)), ingredientScreen(),loginBtn1.destroy()])
+            loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
+            
+        def returnDrink(en):
+            """Gets and prints the content of the entry"""
+            content = entry.get()
+            return content
+            
+        def returnIngredient(en):
+            """Gets and prints the content of the entry"""
+            content = entry.get()
+            self.inges.append(content)
+        
+        def returnOunces(en):
+            """Gets and prints the content of the entry"""
+            content = entry.get()
+            self.inges.append(content)
+        
+        def ouncesScreen():
+            entry.delete(0,END)
+            button = Label(window, text="How many ounces of this ingredient should be added?")
+            button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
+            loginBtn1 = Button(window, text="", command=lambda: [button.destroy(), returnOunces(entry), entry.grid_remove(), checkScreen(),loginBtn1.destroy()])
+            loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
+
+        
+        def ingredientScreen():
+            entry.delete(0,END)
+            button = Label(window, text="What is the name of your ingredient?")
+            button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
+            loginBtn1 = Button(window, text="", command=lambda: [button.destroy(), returnIngredient(entry), ouncesScreen(),loginBtn1.destroy()])
+            loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
+            
+        def checkScreen():
+            newIng = "{}/{};".format(self.inges[0],self.inges[1])
+            self.s += newIng
+            self.inges = []
+            
+            button = Label(window, text="Do you want to add another ingredient?")
+            button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
+            loginBtn1 = Button(window, text="Yes", command=lambda: [button.destroy(), ingredientScreen(), entry.grid(), loginBtn1.destroy(),loginBtn.destroy()])
+            loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
+            
+            loginBtn = Button(window, text="No", command=lambda: [button.destroy(), finishedScreen(), loginBtn.destroy(), loginBtn1.destroy(), self.info.append(self.s.rstrip(self.s[-1]))])
+            loginBtn.grid(row=2, columnspan=1, column=1, pady=10, padx=10, ipadx=50, ipady=40)
+        
+        def finishedScreen():
+            button = Label(window, text="Drink Finished")
+            button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
+            loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy(), loginBtn1.destroy(), App(), createDrink(self.info)])
+            loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
+            
+        entry = Entry(window, width=50,justify='center')
+        entry.grid(row=1, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
         
         
+        
+        main()
+            
+        
+ 
+
+
+
+
+
+############################################################
+# MAIN APP - SELECTION SCREEN FOR CREATING OR MAKING A DRINK
+############################################################
 class App(Frame):
     def __init__(self):
         Frame.__init__(self)
-        loginBtn = Button(window, text='Select Drink', command=lambda: [loginBtn.destroy(),loginBtn1.destroy(), selectDrinks()])
         
+        def mainScreen():
+            loginBtn = Button(window, text='Select Drink', command=lambda: [loginBtn.destroy(),loginBtn1.destroy(), selectDrinks()])
+            loginBtn.grid(row=1, columnspan=1, pady=10, padx=10, ipadx=50, ipady=40)
         
-        loginBtn.grid(row=1, columnspan=1, pady=10, padx=10, ipadx=50, ipady=40)
-        loginBtn1 = Button(window, text='Create Drink', command=lambda: [loginBtn.destroy(),loginBtn1.destroy()])
-        loginBtn1.grid(row=1, columnspan=1, column=2, pady=10, padx=10, ipadx=50, ipady=40)
+            loginBtn1 = Button(window, text='Create Drink', command=lambda: [loginBtn.destroy(),loginBtn1.destroy(), createDrinks()])
+            loginBtn1.grid(row=1, columnspan=1, column=2, pady=10, padx=10, ipadx=50, ipady=40)
+        mainScreen()
+        
+
 
 
 readCSV()
 
-
-
-'''
-ing = []
-
-#hi = Ing("Rum", 1)
-RC_ing = [Ing("Rum", 1), Ing("Coke", 5)]
-VS_ing = [Ing("Vodka", 1), Ing("Sprite", 5)]
-
-ing.append(RC_ing)
-ing.append(VS_ing)
-
-Drinks = []
-Drinks.append([RC_ing, ["Rum & Coke"]])
-Drinks.append([VS_ing, ["Vodka & Sprite"]])
-print(ing[1][0])
-print(Drinks[0][1])
-print(RC_ing[1])
-    
-'''
-window.geometry("400x300")
+window.geometry("800x480")
 app = App()
 window.mainloop()
