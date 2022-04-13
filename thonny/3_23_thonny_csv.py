@@ -4,7 +4,6 @@ from PIL import Image, ImageTk
 import csv
 from csv import writer
 import time
-from waiting import wait
 
 '''
 You don't need to put global on the base indentation level, just initialize the variables here and use global VAR_NAME within the classes/function you need to call them in
@@ -44,6 +43,7 @@ class newDrink:
     
 def readCSV():
     global drinkObjList
+    drinkObjList = []
     with open('data/drink.csv','r') as f:
         for line in f:
             currentLine = ""
@@ -202,7 +202,7 @@ class createDrinks(Frame):
         def finishedScreen():
             button = Label(window, text="Drink Finished")
             button.grid(row=0, columnspan=1, column=0, pady=10, padx=130, ipadx=0, ipady=40)
-            loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy(), loginBtn1.destroy(), App(), createDrink(self.info)])
+            loginBtn1 = Button(window, text="OK", command=lambda: [button.destroy(), loginBtn1.destroy(), App(), createDrink(self.info), readCSV()])
             loginBtn1.grid(row=2, columnspan=1, column=0, pady=10, padx=10, ipadx=50, ipady=40)
             
         entry = Entry(window, width=50,justify='center')
