@@ -336,7 +336,7 @@ class selectDrinks(Frame):
             #logic for the positioning of buttons (keeps buttons in 2 columns)
             if (col % 2 == 0):
                 d["xButton{0}".format(x)].place(x=743, y=selectDrinkXButton)
-                selectDrinkXButton += 130
+                selectDrinkXButton += 140
                 row += 1
                 col = 1
             else:
